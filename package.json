@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "start": "tsdx watch",
-    "build": "tsdx build",
+    "build": "npx rimraf dist && tsdx build",
     "test": "tsdx test --env=jsdom",
     "lint": "tsdx lint"
   },
@@ -36,6 +36,7 @@
     "husky": "^3.0.5",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
+    "rimraf": "^3.0.0",
     "tsdx": "^0.9.2",
     "tslib": "^1.10.0",
     "typescript": "^3.6.3"

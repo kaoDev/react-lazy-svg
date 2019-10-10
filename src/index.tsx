@@ -55,10 +55,12 @@ const mapNodeAttributes = (rawAttributes: NamedNodeMap) =>
 
 export const loadSVG = async (url: string) => {
   let svgString: string | null = null;
+
   if (typeof document !== 'undefined') {
     svgString = await (await fetch(url)).text();
   } else {
-    svgString = await (await import('./serverLoadSvg')).readSvg(url);
+    const foo = import('./serverLoadSvg').then(({ readSvg }) => readSvg(url));
+    svgString = await foo;
   }
 
   if (svgString) {
