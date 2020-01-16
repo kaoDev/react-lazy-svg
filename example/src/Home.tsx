@@ -1,10 +1,9 @@
 import React from 'react';
 import logo from './react.svg';
 import './Home.css';
-import { Icon } from '../..';
+import { Icon } from 'react-lazy-svg';
 
 const Home = () => {
-  console.log({ logo });
   return (
     <div className="Home">
       <div className="Home-header">

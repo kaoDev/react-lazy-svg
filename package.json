@@ -1,9 +1,9 @@
 {
-  "name": "svg-spriter",
+  "name": "react-lazy-svg",
   "license": "MIT",
   "version": "0.1.0",
   "main": "dist/index.js",
-  "module": "dist/svg-spriter.esm.js",
+  "module": "dist/react-lazy-svg.esm.js",
   "typings": "dist/index.d.ts",
   "files": [
     "dist"
@@ -15,7 +15,8 @@
     "lint": "tsdx lint"
   },
   "peerDependencies": {
-    "react": ">=16.8"
+    "react": ">=16.8",
+    "react-dom": ">=16.8"
   },
   "husky": {
     "hooks": {
@@ -30,16 +31,16 @@
   },
   "devDependencies": {
     "@types/axios": "^0.14.0",
-    "@types/jest": "^24.0.18",
-    "@types/react": "^16.9.3",
-    "@types/react-dom": "^16.9.1",
-    "husky": "^3.0.5",
-    "react": "^16.9.0",
-    "react-dom": "^16.9.0",
+    "@types/jest": "^24.9.0",
+    "@types/react": "^16.9.17",
+    "@types/react-dom": "^16.9.4",
+    "husky": "^4.0.10",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
     "rimraf": "^3.0.0",
-    "tsdx": "^0.9.2",
+    "tsdx": "^0.12.3",
     "tslib": "^1.10.0",
-    "typescript": "^3.6.3"
+    "typescript": "^3.7.4"
   },
   "dependencies": {}
 }

@@ -4,7 +4,10 @@ import { StaticRouter } from 'react-router-dom';
 import fastify from 'fastify';
 import { renderToString } from 'react-dom/server';
 import fastifyStatic from 'fastify-static';
-import { renderSpriteSheetToString } from '../../';
+import {
+  renderSpriteSheetToString,
+  SpriteContextProvider,
+} from 'react-lazy-svg';
 
 const assets = require(process.env.RAZZLE_ASSETS_MANIFEST!);
 
@@ -19,7 +22,9 @@ server.get('/*', async (req, res) => {
   const context: { url?: string } = {};
   const markup = renderToString(
     <StaticRouter context={context} location={req.raw.url}>
-      <App />
+      <SpriteContextProvider>
+        <App />
+      </SpriteContextProvider>
     </StaticRouter>
   );
 

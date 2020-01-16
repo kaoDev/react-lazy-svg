@@ -1,6 +1,6 @@
 import app from './server';
 
-app.listen(5001, '0.0.0.0', function(err, address) {
+app.listen(5001, 'localhost', function(err, address) {
   if (err) {
     app.log.error(err);
     process.exit(1);
