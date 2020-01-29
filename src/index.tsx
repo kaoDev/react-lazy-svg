@@ -159,14 +159,18 @@ const hidden = { display: 'none' };
 export const SpriteSheet: FC<{ icons: IconData[] }> = ({ icons }) => {
   return (
     <svg id={spriteSheetId} style={hidden}>
-      {icons.map(icon => (
-        <symbol
-          key={icon.id}
-          id={icon.id}
-          {...icon.attributes}
-          dangerouslySetInnerHTML={icon.svgString}
-        />
-      ))}
+      {icons.map(
+        ({ id, svgString, attributes: { width, height, ...attributes } }) => {
+          return (
+            <symbol
+              key={id}
+              id={id}
+              {...attributes}
+              dangerouslySetInnerHTML={svgString}
+            />
+          );
+        }
+      )}
     </svg>
   );
 };
