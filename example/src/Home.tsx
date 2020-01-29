@@ -7,7 +7,7 @@ const Home = () => {
   return (
     <div className="Home">
       <div className="Home-header">
-        <Icon url={logo} className="Home-logo"></Icon>
+        <Icon url={logo} className="Home-logo" viewBox="0 0 256 228"></Icon>
         <h2>Welcome to Razzle</h2>
       </div>
       <p className="Home-intro">
