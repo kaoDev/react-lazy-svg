@@ -1,8 +1,13 @@
-import fs from 'fs';
 import { promisify } from 'util';
+import fs from 'fs';
 import path from 'path';
 
+const svgIconFiles = new Map<string, string>();
 export const readSvg = async (url: string) => {
+  if (svgIconFiles.has(url)) {
+    return svgIconFiles.get(url);
+  }
+
   const readFile = promisify(fs.readFile);
 
   const cdnBase = 'http://localhost:3001/static/media/';
@@ -16,8 +21,10 @@ export const readSvg = async (url: string) => {
 
   // ignore external assets on server side
   if (!url.startsWith('http')) {
-    return readFile(url, { encoding: 'utf8' });
+    const svgString = await readFile(url, { encoding: 'utf8' });
+    svgIconFiles.set(url, svgString);
+    return svgString;
   }
 
-  return null;
+  return undefined;
 };

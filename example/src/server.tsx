@@ -7,7 +7,9 @@ import fastifyStatic from 'fastify-static';
 import {
   renderSpriteSheetToString,
   SpriteContextProvider,
+  IconsCache,
 } from 'react-lazy-svg';
+import { readSvg } from './serverLoadSvg';
 
 const assets = require(process.env.RAZZLE_ASSETS_MANIFEST!);
 
@@ -19,10 +21,11 @@ server.register(fastifyStatic, {
 });
 
 server.get('/*', async (req, res) => {
+  const sessionIcons: IconsCache = new Map();
   const context: { url?: string } = {};
   const markup = renderToString(
     <StaticRouter context={context} location={req.raw.url}>
-      <SpriteContextProvider>
+      <SpriteContextProvider loadSVG={readSvg} knownIcons={sessionIcons}>
         <App />
       </SpriteContextProvider>
     </StaticRouter>
@@ -54,7 +57,10 @@ server.get('/*', async (req, res) => {
     </body>
 </html>`;
 
-    const extended = await renderSpriteSheetToString(renderedHtml);
+    const extended = await renderSpriteSheetToString(
+      renderedHtml,
+      sessionIcons
+    );
 
     res
       .type('text/html')

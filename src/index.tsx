@@ -5,6 +5,7 @@ import React, {
   useContext,
   useEffect,
   useCallback,
+  useMemo,
 } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
@@ -14,10 +15,17 @@ const ssrEmptySpriteSheet = `<svg id="${spriteSheetId}" style="display:none"></s
 const svgRegex = /<svg([\s\S]*?)>([\s\S]*?)<\/svg>/gim;
 const attributesRegex = /(.*?)=["'](.*?)["']/gim;
 
-export const renderSpriteSheetToString = async (markupString: string) => {
-  await Promise.all(Array.from(knownIcons.values()));
+const globalIconsCache: IconsCache = new Map();
 
-  const spriteSheet = renderToStaticMarkup(<SpriteSheet icons={iconsCache} />);
+export const renderSpriteSheetToString = async (
+  markupString: string,
+  knownIcons: IconsCache
+) => {
+  const arr = await Promise.all(Array.from(knownIcons.values()));
+
+  const spriteSheet = renderToStaticMarkup(
+    <SpriteSheet icons={arr.filter((a): a is IconData => a != null)} />
+  );
 
   return markupString.replace(ssrEmptySpriteSheet, spriteSheet);
 };
@@ -51,29 +59,27 @@ const mapAttributes = (rawAttributes: string) => {
   return attributes;
 };
 
-type IconsCache = Map<string, Promise<IconData | undefined>>;
+export type IconsCache = Map<string, Promise<IconData | undefined>>;
 
-// const knownIcons: Map<string, Promise<IconData | undefined>> = new Map();
+let localIconsList: IconData[] = [];
 
 const registeredListeners: Set<(icons: IconData[]) => void> = new Set();
-let iconsCache: IconData[] = [];
 
 const addListener = (listener: (icons: IconData[]) => void) => {
   registeredListeners.add(listener);
-  listener(iconsCache);
+  listener(localIconsList);
 };
 
 const addIcon = (icon: IconData) => {
-  iconsCache = [...iconsCache, icon];
+  localIconsList = [...localIconsList, icon];
   for (const listener of registeredListeners) {
-    listener(iconsCache);
+    listener(localIconsList);
   }
 };
 
-const storeSVG = (
+const parseSVG = (
   url: string,
-  svgString: string | undefined,
-  knownIcons: IconsCache
+  svgString: string | undefined
 ): IconData | undefined => {
   if (svgString) {
     const matches = svgRegex.exec(svgString);
@@ -91,10 +97,6 @@ const storeSVG = (
     }
   }
 
-  if (knownIcons.has(url)) {
-    knownIcons.delete(url);
-  }
-
   return undefined;
 };
 
@@ -103,12 +105,12 @@ const registerIconInCache = (
   svgString: string | undefined,
   knownIcons: IconsCache
 ) => {
-  if (knownIcons.hasOwnProperty(url)) {
-    return;
-  }
-  const iconData = storeSVG(url, svgString, knownIcons);
+  const iconData = parseSVG(url, svgString);
+
   if (iconData) {
     addIcon(iconData);
+  } else if (knownIcons.has(url)) {
+    knownIcons.delete(url);
   }
   return iconData;
 };
@@ -131,28 +133,36 @@ export interface SpriteContext {
   /**
    * asynchronous function to load an svg string by url
    */
-  loadSVG: (url: string) => Promise<string>;
+  loadSVG: (url: string) => Promise<string | undefined>;
+  knownIcons?: IconsCache;
 }
-
-const;
 
 export const SpriteContextProvider: FC<SpriteContext> = ({
   children,
   loadSVG,
+  knownIcons = globalIconsCache,
 }) => {
   const icons = useIcons();
 
-  knownIcons.set(url, iconPromise);
-  const [setKnownIcons, knownIcons] = useState<IconsCache>({});
+  const registerSVG = useCallback(
+    (url: string) => {
+      if (knownIcons.has(url)) {
+        return;
+      }
+      const iconPromise = loadSVG(url).then(svgString =>
+        registerIconInCache(url, svgString, knownIcons)
+      );
+      knownIcons.set(url, iconPromise);
+    },
+    [knownIcons]
+  );
 
-  const registerIcon = useCallback((url: string) => {
-    loadSVG(url).then();
-  }, []);
+  const contextValue = useMemo(() => ({ registerSVG }), [registerSVG]);
 
   return (
-    <spriteContext.Provider value={registerIcon}>
-      <SpriteSheet icons={icons}></SpriteSheet>
+    <spriteContext.Provider value={contextValue}>
       {children}
+      <SpriteSheet icons={icons}></SpriteSheet>
     </spriteContext.Provider>
   );
 };
@@ -161,8 +171,8 @@ export const Icon: FC<{ url: string } & React.SVGProps<SVGSVGElement>> = ({
   url,
   ...props
 }) => {
-  const registerIcon = useContext(spriteContext);
-  registerIcon(url);
+  const { registerSVG } = useContext(spriteContext);
+  registerSVG(url);
 
   return (
     <svg {...props}>
@@ -176,11 +186,21 @@ export const SpriteSheet: FC<{ icons: IconData[] }> = ({ icons }) => {
   return (
     <svg id={spriteSheetId} style={hidden}>
       {icons.map(
-        ({ id, svgString, attributes: { width, height, ...attributes } }) => {
+        ({
+          id,
+          svgString,
+          attributes: {
+            width,
+            height,
+            ['xmlns:xlink']: xmlnsXlink,
+            ...attributes
+          },
+        }) => {
           return (
             <symbol
               key={id}
               id={id}
+              xmlnsXlink={xmlnsXlink}
               {...attributes}
               dangerouslySetInnerHTML={svgString}
             />
@@ -201,23 +221,20 @@ const mapNodeAttributes = (rawAttributes: NamedNodeMap) =>
     {}
   );
 
-const initOnClient = () => {
-  if (typeof document !== 'undefined') {
-    const spriteSheet = document.getElementById(spriteSheetId);
+export const initOnClient = (knownIcons: IconsCache = globalIconsCache) => {
+  knownIcons.clear();
+  const spriteSheet = document.getElementById(spriteSheetId);
 
-    if (spriteSheet) {
-      const sprites = spriteSheet.querySelectorAll('symbol');
+  if (spriteSheet) {
+    const sprites = spriteSheet.querySelectorAll('symbol');
 
-      sprites.forEach(node => {
-        const { id, attributes: rawAttributes, innerHTML } = node;
-        const attributes = mapNodeAttributes(rawAttributes);
-        const iconData = { id, attributes, svgString: { __html: innerHTML } };
-        addIcon(iconData);
+    sprites.forEach(node => {
+      const { id, attributes: rawAttributes, innerHTML } = node;
+      const attributes = mapNodeAttributes(rawAttributes);
+      const iconData = { id, attributes, svgString: { __html: innerHTML } };
+      addIcon(iconData);
 
-        knownIcons.set(id, new Promise(resolve => resolve(iconData)));
-      });
-    }
+      knownIcons.set(id, new Promise(resolve => resolve(iconData)));
+    });
   }
 };
-
-initOnClient();
