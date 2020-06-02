@@ -2,9 +2,13 @@ import App from './App';
 import { BrowserRouter } from 'react-router-dom';
 import React from 'react';
 import { hydrate } from 'react-dom';
-import { SpriteContextProvider, initOnClient } from 'react-lazy-svg';
+import {
+  SpriteContextProvider,
+  initOnClient,
+  IconsCache,
+} from 'react-lazy-svg';
 
-const cache = new Map();
+const cache: IconsCache = new Map();
 const loadSVG = async (url: string) => {
   return await (await fetch(url)).text();
 };

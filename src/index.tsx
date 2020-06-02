@@ -182,7 +182,7 @@ export const Icon: FC<{ url: string } & React.SVGProps<SVGSVGElement>> = ({
 };
 
 const hidden = { display: 'none' };
-export const SpriteSheet: FC<{ icons: IconData[] }> = ({ icons }) => {
+const SpriteSheet: FC<{ icons: IconData[] }> = ({ icons }) => {
   return (
     <svg id={spriteSheetId} style={hidden}>
       {icons.map(

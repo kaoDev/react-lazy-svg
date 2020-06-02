@@ -3,3 +3,20 @@ body {
   padding: 0;
   font-family: sans-serif;
 }
+
+.icon {
+  width: 32px;
+  height: 32px;
+  padding: 4px;
+}
+
+.icon.red {
+  fill: #a71013;
+}
+.icon.blue {
+  fill: #0514b2;
+}
+.icon.large {
+  width: 48px;
+  height: 48px;
+}
