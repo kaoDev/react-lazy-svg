@@ -15,7 +15,7 @@ export const readSvg = async (url: string) => {
   if (url.startsWith(cdnBase)) {
     url = path.join(
       process.cwd(),
-      url.replace(cdnBase, './build/static/media/')
+      url.replace(cdnBase, './build/public/static/media/')
     );
   }
 

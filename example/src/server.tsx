@@ -1,6 +1,5 @@
 import App from './App';
 import React from 'react';
-import { StaticRouter } from 'react-router-dom';
 import fastify from 'fastify';
 import { renderToString } from 'react-dom/server';
 import fastifyStatic from 'fastify-static';
@@ -20,15 +19,13 @@ server.register(fastifyStatic, {
   prefix: '/static', // optional: default '/'
 });
 
-server.get('/*', async (req, res) => {
+server.get('/*', async (_, res) => {
   const sessionIcons: IconsCache = new Map();
   const context: { url?: string } = {};
   const markup = renderToString(
-    <StaticRouter context={context} location={req.raw.url}>
-      <SpriteContextProvider loadSVG={readSvg} knownIcons={sessionIcons}>
-        <App />
-      </SpriteContextProvider>
-    </StaticRouter>
+    <SpriteContextProvider loadSVG={readSvg} knownIcons={sessionIcons}>
+      <App />
+    </SpriteContextProvider>
   );
 
   if (context.url) {

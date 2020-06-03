@@ -12,8 +12,6 @@ import { renderToStaticMarkup } from 'react-dom/server';
 const spriteSheetId = '__SVG_SPRITE_SHEET__';
 
 const ssrEmptySpriteSheet = `<svg id="${spriteSheetId}" style="display:none"></svg>`;
-const svgRegex = /<svg([\s\S]*?)>([\s\S]*?)<\/svg>/gim;
-const attributesRegex = /(.*?)=["'](.*?)["']/gim;
 
 const globalIconsCache: IconsCache = new Map();
 
@@ -50,6 +48,7 @@ const spriteContext = createContext<SpriteContextValue>({ registerSVG: noop });
 const mapAttributes = (rawAttributes: string) => {
   let match: null | RegExpExecArray = null;
   const attributes: IconData['attributes'] = {};
+  const attributesRegex = /(.*?)=["'](.*?)["']/gim;
 
   while ((match = attributesRegex.exec(rawAttributes))) {
     const [, name, value] = match;
@@ -82,14 +81,15 @@ const parseSVG = (
   svgString: string | undefined
 ): IconData | undefined => {
   if (svgString) {
+    const svgRegex = /<svg([\s\S]*?)>([\s\S]*?)<\/svg>/gim;
     const matches = svgRegex.exec(svgString);
 
     if (matches) {
-      const [, attributesString, __html] = matches;
+      const [, attributesString, htmlString] = matches;
       const attributes = mapAttributes(attributesString);
 
       const svgString = {
-        __html,
+        __html: htmlString.trim(),
       };
       const id = url;
 
@@ -231,7 +231,11 @@ export const initOnClient = (knownIcons: IconsCache = globalIconsCache) => {
     sprites.forEach(node => {
       const { id, attributes: rawAttributes, innerHTML } = node;
       const attributes = mapNodeAttributes(rawAttributes);
-      const iconData = { id, attributes, svgString: { __html: innerHTML } };
+      const iconData = {
+        id,
+        attributes,
+        svgString: { __html: innerHTML.trim() },
+      };
       addIcon(iconData);
 
       knownIcons.set(id, new Promise(resolve => resolve(iconData)));
