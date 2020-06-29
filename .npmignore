@@ -5,5 +5,6 @@ node_modules
 .rts2_cache_cjs
 .rts2_cache_esm
 .rts2_cache_umd
-dist
-coverage
+/.vscode
+/example
+/coverage

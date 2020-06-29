@@ -17,12 +17,12 @@ const globalIconsCache: IconsCache = new Map();
 
 export const renderSpriteSheetToString = async (
   markupString: string,
-  knownIcons: IconsCache
+  knownIcons: IconsCache,
 ) => {
   const arr = await Promise.all(Array.from(knownIcons.values()));
 
   const spriteSheet = renderToStaticMarkup(
-    <SpriteSheet icons={arr.filter((a): a is IconData => a != null)} />
+    <SpriteSheet icons={arr.filter((a): a is IconData => a != null)} />,
   );
 
   return markupString.replace(ssrEmptySpriteSheet, spriteSheet);
@@ -34,7 +34,7 @@ export interface IconData {
   attributes: { [key: string]: string };
 }
 
-const noop = () => void 0;
+const noop = () => undefined;
 
 interface SpriteContextValue {
   /**
@@ -78,7 +78,7 @@ const addIcon = (icon: IconData) => {
 
 const parseSVG = (
   url: string,
-  svgString: string | undefined
+  svgString: string | undefined,
 ): IconData | undefined => {
   if (svgString) {
     const svgRegex = /<svg([\s\S]*?)>([\s\S]*?)<\/svg>/gim;
@@ -103,7 +103,7 @@ const parseSVG = (
 const registerIconInCache = (
   url: string,
   svgString: string | undefined,
-  knownIcons: IconsCache
+  knownIcons: IconsCache,
 ) => {
   const iconData = parseSVG(url, svgString);
 
@@ -149,12 +149,12 @@ export const SpriteContextProvider: FC<SpriteContext> = ({
       if (knownIcons.has(url)) {
         return;
       }
-      const iconPromise = loadSVG(url).then(svgString =>
-        registerIconInCache(url, svgString, knownIcons)
+      const iconPromise = loadSVG(url).then((svgString) =>
+        registerIconInCache(url, svgString, knownIcons),
       );
       knownIcons.set(url, iconPromise);
     },
-    [knownIcons]
+    [knownIcons],
   );
 
   const contextValue = useMemo(() => ({ registerSVG }), [registerSVG]);
@@ -172,7 +172,14 @@ export const Icon: FC<{ url: string } & React.SVGProps<SVGSVGElement>> = ({
   ...props
 }) => {
   const { registerSVG } = useContext(spriteContext);
-  registerSVG(url);
+
+  if (typeof document !== 'undefined') {
+    registerSVG(url);
+  } else {
+    useEffect(() => {
+      registerSVG(url);
+    }, [url]);
+  }
 
   return (
     <svg {...props}>
@@ -205,7 +212,7 @@ const SpriteSheet: FC<{ icons: IconData[] }> = ({ icons }) => {
               dangerouslySetInnerHTML={svgString}
             />
           );
-        }
+        },
       )}
     </svg>
   );
@@ -218,7 +225,7 @@ const mapNodeAttributes = (rawAttributes: NamedNodeMap) =>
 
       return attributes;
     },
-    {}
+    {},
   );
 
 export const initOnClient = (knownIcons: IconsCache = globalIconsCache) => {
@@ -228,7 +235,7 @@ export const initOnClient = (knownIcons: IconsCache = globalIconsCache) => {
   if (spriteSheet) {
     const sprites = spriteSheet.querySelectorAll('symbol');
 
-    sprites.forEach(node => {
+    sprites.forEach((node) => {
       const { id, attributes: rawAttributes, innerHTML } = node;
       const attributes = mapNodeAttributes(rawAttributes);
       const iconData = {
@@ -238,7 +245,7 @@ export const initOnClient = (knownIcons: IconsCache = globalIconsCache) => {
       };
       addIcon(iconData);
 
-      knownIcons.set(id, new Promise(resolve => resolve(iconData)));
+      knownIcons.set(id, new Promise((resolve) => resolve(iconData)));
     });
   }
 };

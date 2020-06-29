@@ -1,7 +1,14 @@
 {
   "name": "react-lazy-svg",
   "license": "MIT",
-  "version": "0.1.0",
+  "repository": {
+    "url": "https://github.com/kaoDev/react-lazy-svg"
+  },
+  "author": {
+    "name": "Kalle Ott",
+    "url": "https://github.com/kaoDev/"
+  },
+  "version": "1.0.0",
   "main": "dist/index.js",
   "module": "dist/react-lazy-svg.esm.js",
   "typings": "dist/index.d.ts",
@@ -27,22 +34,22 @@
     "printWidth": 80,
     "semi": true,
     "singleQuote": true,
-    "trailingComma": "es5"
+    "trailingComma": "all",
+    "proseWrap": "always"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^5.9.0",
-    "@testing-library/react": "^10.0.6",
-    "@types/axios": "^0.14.0",
-    "@types/jest": "^25.2.3",
-    "@types/react": "^16.9.35",
+    "@testing-library/jest-dom": "^5.11.0",
+    "@testing-library/react": "^10.4.3",
+    "@types/jest": "^26.0.3",
+    "@types/react": "^16.9.41",
     "@types/react-dom": "^16.9.8",
     "husky": "^4.2.5",
+    "prettier": "^2.0.5",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "rimraf": "^3.0.2",
     "tsdx": "^0.13.2",
     "tslib": "^2.0.0",
-    "typescript": "^3.9.3"
+    "typescript": "^3.9.5"
   },
   "dependencies": {}
 }

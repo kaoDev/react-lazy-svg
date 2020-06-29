@@ -33,7 +33,7 @@ test('should fill the cache when an icon is rendered', async () => {
   const { rerender } = render(
     <SpriteContextProvider knownIcons={cache} loadSVG={loadSVG}>
       <Icon url={'1'}></Icon>
-    </SpriteContextProvider>
+    </SpriteContextProvider>,
   );
   expect(cache.size).toBe(1);
   await act(async () => {
@@ -41,21 +41,21 @@ test('should fill the cache when an icon is rendered', async () => {
 
     expect(iconData?.attributes.viewBox).toBe('0 0 24 24');
     expect(iconData?.svgString.__html).toBe(
-      '<path d="M0 0h24v24H0z" fill="none"/>'
+      '<path d="M0 0h24v24H0z" fill="none"/>',
     );
   });
 
   rerender(
     <SpriteContextProvider knownIcons={cache} loadSVG={loadSVG}>
       <Icon url={'2'}></Icon>
-    </SpriteContextProvider>
+    </SpriteContextProvider>,
   );
   await act(async () => {
     expect(cache.size).toBe(2);
     const iconData = await cache.get('2');
     expect(iconData?.attributes.viewBox).toBe('0 0 24 24');
     expect(iconData?.svgString.__html).toBe(
-      '<path d="M0 0h24v24H0z" fill="none"/>'
+      '<path d="M0 0h24v24H0z" fill="none"/>',
     );
   });
 });
@@ -65,16 +65,16 @@ test('render loaded svgs to a svg sprite sheet string', async () => {
   const renderedString = renderToString(
     <SpriteContextProvider knownIcons={cache} loadSVG={loadSVG}>
       <Icon url={'1'}></Icon>
-    </SpriteContextProvider>
+    </SpriteContextProvider>,
   );
 
   const renderedSpriteSheet = await renderSpriteSheetToString(
     renderedString,
-    cache
+    cache,
   );
 
   expect(renderedSpriteSheet).toMatchInlineSnapshot(
-    `"<svg><use xlink:href=\\"#1\\"></use></svg><svg id=\\"__SVG_SPRITE_SHEET__\\" style=\\"display:none\\"><symbol id=\\"1\\" xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M0 0h24v24H0z\\" fill=\\"none\\"/></symbol></svg>"`
+    `"<svg><use xlink:href=\\"#1\\"></use></svg><svg id=\\"__SVG_SPRITE_SHEET__\\" style=\\"display:none\\"><symbol id=\\"1\\" xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M0 0h24v24H0z\\" fill=\\"none\\"/></symbol></svg>"`,
   );
 });
 
@@ -100,6 +100,6 @@ test('client should be able to initiate the cache from a rendered dom', async ()
   expect(iconData?.attributes.width).toBe(undefined);
   expect(iconData?.attributes.viewBox).toBe('0 0 24 24');
   expect(iconData?.svgString.__html).toBe(
-    '<path d="M0 0h24v24H0z" fill="none"></path>'
+    '<path d="M0 0h24v24H0z" fill="none"></path>',
   );
 });
