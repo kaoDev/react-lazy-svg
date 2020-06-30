@@ -173,7 +173,7 @@ export const Icon: FC<{ url: string } & React.SVGProps<SVGSVGElement>> = ({
 }) => {
   const { registerSVG } = useContext(spriteContext);
 
-  if (typeof document !== 'undefined') {
+  if (typeof document === 'undefined') {
     registerSVG(url);
   } else {
     useEffect(() => {

@@ -8,7 +8,7 @@
     "name": "Kalle Ott",
     "url": "https://github.com/kaoDev/"
   },
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "dist/index.js",
   "module": "dist/react-lazy-svg.esm.js",
   "typings": "dist/index.d.ts",
