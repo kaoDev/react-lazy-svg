@@ -7,6 +7,7 @@ import {
   SpriteContextProvider,
   IconsCache,
   renderSpriteSheetToString,
+  createSpriteSheetString,
 } from '../src/index';
 import { renderToString } from 'react-dom/server';
 
@@ -31,7 +32,7 @@ const loadSVG = async (url: string) => {
 test('render loaded svgs to a svg sprite sheet string', async () => {
   const cache: IconsCache = new Map();
   const renderedString = renderToString(
-    <SpriteContextProvider knownIcons={cache} loadSVG={loadSVG}>
+    <SpriteContextProvider embeddedSSR knownIcons={cache} loadSVG={loadSVG}>
       <Icon url={'1'}></Icon>
     </SpriteContextProvider>,
   );
@@ -43,5 +44,38 @@ test('render loaded svgs to a svg sprite sheet string', async () => {
 
   expect(renderedSpriteSheet).toMatchInlineSnapshot(
     `"<svg><use xlink:href=\\"#1\\"></use></svg><svg id=\\"__SVG_SPRITE_SHEET__\\" style=\\"display:none\\"><symbol id=\\"1\\" xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M0 0h24v24H0z\\" fill=\\"none\\"/></symbol></svg>"`,
+  );
+});
+
+test('should not render an embedded sprite sheet when not explicitly asked for', async () => {
+  const cache: IconsCache = new Map();
+  const renderedString = renderToString(
+    <SpriteContextProvider knownIcons={cache} loadSVG={loadSVG}>
+      <Icon url={'1'}></Icon>
+    </SpriteContextProvider>,
+  );
+
+  const renderedSpriteSheet = await renderSpriteSheetToString(
+    renderedString,
+    cache,
+  );
+
+  expect(renderedSpriteSheet).toMatchInlineSnapshot(
+    `"<svg><use xlink:href=\\"#1\\"></use></svg>"`,
+  );
+});
+
+test('render loaded svgs to a svg sprite sheet string', async () => {
+  const cache: IconsCache = new Map();
+  renderToString(
+    <SpriteContextProvider embeddedSSR knownIcons={cache} loadSVG={loadSVG}>
+      <Icon url={'1'}></Icon>
+    </SpriteContextProvider>,
+  );
+
+  const renderedSpriteSheet = await createSpriteSheetString(cache);
+
+  expect(renderedSpriteSheet).toMatchInlineSnapshot(
+    `"<svg id=\\"__SVG_SPRITE_SHEET__\\" style=\\"display:none\\"><symbol id=\\"1\\" xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M0 0h24v24H0z\\" fill=\\"none\\"/></symbol></svg>"`,
   );
 });

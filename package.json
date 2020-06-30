@@ -9,7 +9,7 @@
     "url": "https://github.com/kaoDev/"
   },
   "description": "react-lazy-svg is a simple way to use SVGs with the performance benefits of a sprite-sheet and svg css styling possibilities. Without bloating the bundle. It automatically creates a sprite-sheet for all used SVGs on the client but also provides a function to create a server side rendered sprite-sheet for icons used in the first paint.",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "main": "dist/index.js",
   "module": "dist/react-lazy-svg.esm.js",
   "typings": "dist/index.d.ts",

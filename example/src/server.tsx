@@ -4,9 +4,9 @@ import fastify from 'fastify';
 import { renderToString } from 'react-dom/server';
 import fastifyStatic from 'fastify-static';
 import {
-  renderSpriteSheetToString,
   SpriteContextProvider,
   IconsCache,
+  createSpriteSheetString,
 } from 'react-lazy-svg';
 import { readSvg } from './serverLoadSvg';
 
@@ -25,8 +25,10 @@ server.get('/*', async (_, res) => {
   const markup = renderToString(
     <SpriteContextProvider loadSVG={readSvg} knownIcons={sessionIcons}>
       <App />
-    </SpriteContextProvider>
+    </SpriteContextProvider>,
   );
+
+  const spriteSheet = await createSpriteSheetString(sessionIcons);
 
   if (context.url) {
     res.redirect(context.url);
@@ -51,18 +53,11 @@ server.get('/*', async (_, res) => {
     </head>
     <body>
         <div id="root">${markup}</div>
+        ${spriteSheet}
     </body>
 </html>`;
 
-    const extended = await renderSpriteSheetToString(
-      renderedHtml,
-      sessionIcons
-    );
-
-    res
-      .type('text/html')
-      .status(200)
-      .send(extended);
+    res.type('text/html').status(200).send(renderedHtml);
   }
 });
 

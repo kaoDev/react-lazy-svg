@@ -6,25 +6,32 @@ import React, {
   useEffect,
   useCallback,
   useMemo,
+  useRef,
 } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { createPortal } from 'react-dom';
 
-const spriteSheetId = '__SVG_SPRITE_SHEET__';
-
-const ssrEmptySpriteSheet = `<svg id="${spriteSheetId}" style="display:none"></svg>`;
+const internalSpriteSheetId = '__SVG_SPRITE_SHEET__';
+const isSSR = typeof document === 'undefined';
 
 const globalIconsCache: IconsCache = new Map();
+
+export const createSpriteSheetString = async (knownIcons: IconsCache) => {
+  const arr = await Promise.all(Array.from(knownIcons.values()));
+
+  return renderToStaticMarkup(
+    <SpriteSheet icons={arr.filter((a): a is IconData => a != null)} />,
+  );
+};
 
 export const renderSpriteSheetToString = async (
   markupString: string,
   knownIcons: IconsCache,
+  spriteSheetId = internalSpriteSheetId,
 ) => {
-  const arr = await Promise.all(Array.from(knownIcons.values()));
+  const spriteSheet = await createSpriteSheetString(knownIcons);
 
-  const spriteSheet = renderToStaticMarkup(
-    <SpriteSheet icons={arr.filter((a): a is IconData => a != null)} />,
-  );
-
+  const ssrEmptySpriteSheet = `<svg id="${spriteSheetId}" style="display:none"></svg>`;
   return markupString.replace(ssrEmptySpriteSheet, spriteSheet);
 };
 
@@ -135,12 +142,14 @@ export interface SpriteContext {
    */
   loadSVG: (url: string) => Promise<string | undefined>;
   knownIcons?: IconsCache;
+  embeddedSSR?: boolean;
 }
 
 export const SpriteContextProvider: FC<SpriteContext> = ({
   children,
   loadSVG,
   knownIcons = globalIconsCache,
+  embeddedSSR = false,
 }) => {
   const icons = useIcons();
 
@@ -162,7 +171,7 @@ export const SpriteContextProvider: FC<SpriteContext> = ({
   return (
     <spriteContext.Provider value={contextValue}>
       {children}
-      <SpriteSheet icons={icons}></SpriteSheet>
+      {(!isSSR || embeddedSSR) && <SpriteSheet icons={icons}></SpriteSheet>}
     </spriteContext.Provider>
   );
 };
@@ -173,7 +182,7 @@ export const Icon: FC<{ url: string } & React.SVGProps<SVGSVGElement>> = ({
 }) => {
   const { registerSVG } = useContext(spriteContext);
 
-  if (typeof document === 'undefined') {
+  if (isSSR) {
     registerSVG(url);
   } else {
     useEffect(() => {
@@ -189,31 +198,39 @@ export const Icon: FC<{ url: string } & React.SVGProps<SVGSVGElement>> = ({
 };
 
 const hidden = { display: 'none' };
-const SpriteSheet: FC<{ icons: IconData[] }> = ({ icons }) => {
+const SpriteSheet: FC<{
+  icons: IconData[];
+  spriteSheetId?: string;
+}> = ({ icons, spriteSheetId = internalSpriteSheetId }) => {
+  const spriteSheetContainer = useRef(
+    !isSSR ? document.getElementById(spriteSheetId) : null,
+  );
+
+  const renderedIcons = icons.map(
+    ({
+      id,
+      svgString,
+      attributes: { width, height, ['xmlns:xlink']: xmlnsXlink, ...attributes },
+    }) => {
+      return (
+        <symbol
+          key={id}
+          id={id}
+          xmlnsXlink={xmlnsXlink}
+          {...attributes}
+          dangerouslySetInnerHTML={svgString}
+        />
+      );
+    },
+  );
+
+  if (spriteSheetContainer.current) {
+    return createPortal(renderedIcons, spriteSheetContainer.current);
+  }
+
   return (
     <svg id={spriteSheetId} style={hidden}>
-      {icons.map(
-        ({
-          id,
-          svgString,
-          attributes: {
-            width,
-            height,
-            ['xmlns:xlink']: xmlnsXlink,
-            ...attributes
-          },
-        }) => {
-          return (
-            <symbol
-              key={id}
-              id={id}
-              xmlnsXlink={xmlnsXlink}
-              {...attributes}
-              dangerouslySetInnerHTML={svgString}
-            />
-          );
-        },
-      )}
+      {renderedIcons}
     </svg>
   );
 };
@@ -228,7 +245,10 @@ const mapNodeAttributes = (rawAttributes: NamedNodeMap) =>
     {},
   );
 
-export const initOnClient = (knownIcons: IconsCache = globalIconsCache) => {
+export const initOnClient = (
+  knownIcons: IconsCache = globalIconsCache,
+  spriteSheetId = internalSpriteSheetId,
+) => {
   knownIcons.clear();
   const spriteSheet = document.getElementById(spriteSheetId);
 
