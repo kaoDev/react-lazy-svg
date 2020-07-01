@@ -59,6 +59,12 @@ test('should fill the cache when an icon is rendered', async () => {
 });
 
 test('client should be able to initiate the cache from a rendered dom', async () => {
+  const serialize = require('w3c-xmlserializer');
+
+  window.XMLSerializer = class XMLSerializer {
+    serializeToString = serialize;
+  };
+
   const cache: IconsCache = new Map();
   document.body.innerHTML = `<svg id="__SVG_SPRITE_SHEET__" style="display:none">
       <symbol
@@ -80,6 +86,6 @@ test('client should be able to initiate the cache from a rendered dom', async ()
   expect(iconData?.attributes.width).toBe(undefined);
   expect(iconData?.attributes.viewBox).toBe('0 0 24 24');
   expect(iconData?.svgString.__html).toBe(
-    '<path d="M0 0h24v24H0z" fill="none"></path>',
+    '<path xmlns="http://www.w3.org/2000/svg" d="M0 0h24v24H0z" fill="none"/>',
   );
 });

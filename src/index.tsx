@@ -251,12 +251,16 @@ export const initOnClient = (
 ) => {
   knownIcons.clear();
   const spriteSheet = document.getElementById(spriteSheetId);
-
   if (spriteSheet) {
-    const sprites = spriteSheet.querySelectorAll('symbol');
+    const serializer = new XMLSerializer();
+    const sprites = Array.from(spriteSheet.querySelectorAll('symbol'));
 
-    sprites.forEach((node) => {
-      const { id, attributes: rawAttributes, innerHTML } = node;
+    for (const node of sprites) {
+      const innerHTML = Array.prototype.map
+        .call(node.childNodes, (child) => serializer.serializeToString(child))
+        .join('');
+
+      const { id, attributes: rawAttributes } = node;
       const attributes = mapNodeAttributes(rawAttributes);
       const iconData = {
         id,
@@ -266,6 +270,6 @@ export const initOnClient = (
       addIcon(iconData);
 
       knownIcons.set(id, new Promise((resolve) => resolve(iconData)));
-    });
+    }
   }
 };
