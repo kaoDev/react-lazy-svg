@@ -197,7 +197,12 @@ export const Icon: FC<{ url: string } & React.SVGProps<SVGSVGElement>> = ({
   );
 };
 
-const hidden = { display: 'none' };
+const hidden = {
+  height: 0,
+  width: 0,
+  position: 'absolute',
+  visibility: 'hidden',
+} as const;
 const SpriteSheet: FC<{
   icons: IconData[];
   spriteSheetId?: string;

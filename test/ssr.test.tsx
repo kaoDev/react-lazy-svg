@@ -43,7 +43,7 @@ test('render loaded svgs to a svg sprite sheet string', async () => {
   );
 
   expect(renderedSpriteSheet).toMatchInlineSnapshot(
-    `"<svg><use xlink:href=\\"#1\\"></use></svg><svg id=\\"__SVG_SPRITE_SHEET__\\" style=\\"display:none\\"><symbol id=\\"1\\" xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M0 0h24v24H0z\\" fill=\\"none\\"/></symbol></svg>"`,
+    `"<svg><use xlink:href=\\"#1\\"></use></svg><svg id=\\"__SVG_SPRITE_SHEET__\\" style=\\"height:0;width:0;position:absolute;visibility:hidden\\"></svg>"`,
   );
 });
 
@@ -76,6 +76,6 @@ test('render loaded svgs to a svg sprite sheet string', async () => {
   const renderedSpriteSheet = await createSpriteSheetString(cache);
 
   expect(renderedSpriteSheet).toMatchInlineSnapshot(
-    `"<svg id=\\"__SVG_SPRITE_SHEET__\\" style=\\"display:none\\"><symbol id=\\"1\\" xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M0 0h24v24H0z\\" fill=\\"none\\"/></symbol></svg>"`,
+    `"<svg id=\\"__SVG_SPRITE_SHEET__\\" style=\\"height:0;width:0;position:absolute;visibility:hidden\\"><symbol id=\\"1\\" xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M0 0h24v24H0z\\" fill=\\"none\\"/></symbol></svg>"`,
   );
 });
