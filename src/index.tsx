@@ -1,39 +1,19 @@
 import React, {
-  FC,
   createContext,
-  useState,
+  useCallback,
   useContext,
   useEffect,
-  useCallback,
   useMemo,
   useRef,
+  useState,
 } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
+import type { FC } from 'react';
 import { createPortal } from 'react-dom';
+import { defaultInternalSpriteSheetId } from './constants';
 
-const internalSpriteSheetId = '__SVG_SPRITE_SHEET__';
 const isSSR = typeof document === 'undefined';
 
 const globalIconsCache: IconsCache = new Map();
-
-export const createSpriteSheetString = async (knownIcons: IconsCache) => {
-  const arr = await Promise.all(Array.from(knownIcons.values()));
-
-  return renderToStaticMarkup(
-    <SpriteSheet icons={arr.filter((a): a is IconData => a != null)} />,
-  );
-};
-
-export const renderSpriteSheetToString = async (
-  markupString: string,
-  knownIcons: IconsCache,
-  spriteSheetId = internalSpriteSheetId,
-) => {
-  const spriteSheet = await createSpriteSheetString(knownIcons);
-
-  const ssrEmptySpriteSheet = `<svg id="${spriteSheetId}" style="display:none"></svg>`;
-  return markupString.replace(ssrEmptySpriteSheet, spriteSheet);
-};
 
 export interface IconData {
   id: string;
@@ -59,7 +39,9 @@ const mapAttributes = (rawAttributes: string) => {
 
   while ((match = attributesRegex.exec(rawAttributes))) {
     const [, name, value] = match;
-    attributes[name.trim()] = value;
+    if (name && value) {
+      attributes[name.trim()] = value;
+    }
   }
 
   return attributes;
@@ -93,6 +75,11 @@ const parseSVG = (
 
     if (matches) {
       const [, attributesString, htmlString] = matches;
+
+      if (!attributesString || !htmlString) {
+        return;
+      }
+
       const attributes = mapAttributes(attributesString);
 
       const svgString = {
@@ -163,7 +150,7 @@ export const SpriteContextProvider: FC<SpriteContext> = ({
       );
       knownIcons.set(url, iconPromise);
     },
-    [knownIcons],
+    [knownIcons, loadSVG],
   );
 
   const contextValue = useMemo(() => ({ registerSVG }), [registerSVG]);
@@ -185,9 +172,10 @@ export const Icon: FC<{ url: string } & React.SVGProps<SVGSVGElement>> = ({
   if (isSSR) {
     registerSVG(url);
   } else {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     useEffect(() => {
       registerSVG(url);
-    }, [url]);
+    }, [registerSVG, url]);
   }
 
   return (
@@ -203,10 +191,10 @@ const hidden = {
   position: 'absolute',
   visibility: 'hidden',
 } as const;
-const SpriteSheet: FC<{
+export const SpriteSheet: FC<{
   icons: IconData[];
   spriteSheetId?: string;
-}> = ({ icons, spriteSheetId = internalSpriteSheetId }) => {
+}> = ({ icons, spriteSheetId = defaultInternalSpriteSheetId }) => {
   const spriteSheetContainer = useRef(
     !isSSR ? document.getElementById(spriteSheetId) : null,
   );
@@ -252,7 +240,7 @@ const mapNodeAttributes = (rawAttributes: NamedNodeMap) =>
 
 export const initOnClient = (
   knownIcons: IconsCache = globalIconsCache,
-  spriteSheetId = internalSpriteSheetId,
+  spriteSheetId = defaultInternalSpriteSheetId,
 ) => {
   knownIcons.clear();
   const spriteSheet = document.getElementById(spriteSheetId);
