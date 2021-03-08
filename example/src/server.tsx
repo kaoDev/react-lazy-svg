@@ -3,11 +3,8 @@ import React from 'react';
 import fastify from 'fastify';
 import { renderToString } from 'react-dom/server';
 import fastifyStatic from 'fastify-static';
-import {
-  SpriteContextProvider,
-  IconsCache,
-  createSpriteSheetString,
-} from 'react-lazy-svg';
+import { SpriteContextProvider, IconsCache } from 'react-lazy-svg';
+import { createSpriteSheetString } from 'react-lazy-svg/dist/ssr';
 import { readSvg } from './serverLoadSvg';
 
 const assets = require(process.env.RAZZLE_ASSETS_MANIFEST!);

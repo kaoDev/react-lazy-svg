@@ -1,5 +1,4 @@
 // @ts-check
-
 /**
  * @typedef {Object} TsdxOptions 
  * @property {string} input - path to file
@@ -14,7 +13,7 @@
 
  */
 
-const safePackageName = name =>
+const safePackageName = (name) =>
   name.toLowerCase().replace(/((^[^a-zA-Z]+)|[^\w.-])|([^a-zA-Z0-9]+$)/g, '');
 
 // Not transpiled with TypeScript or Babel, so use plain Es6/Node.js!
@@ -26,19 +25,29 @@ module.exports = {
    * @param {TsdxOptions} options
    */
   rollup(config, options) {
-    config.output.dir = 'dist';
+    console.log('options input', options);
+
+    config.output = { dir: 'dist' };
+    delete config.output.file;
     config.output.entryFileNames = `${safePackageName(options.name)}.[format]${
       options.env
         ? `.${options.env}${options.env === 'production' ? '.min' : ''}`
         : ''
     }.js`;
-    config.output.chunkFileNames = `[name].[format]${
-      options.env
-        ? `.${options.env}${options.env === 'production' ? '.min' : ''}`
-        : ''
-    }.js`;
 
-    delete config.output.file;
-    return config; // always return a config.
+    const ssrConfig = {
+      ...config,
+      input: 'src/ssr.tsx',
+      output: {
+        ...config.output,
+        entryFileNames: `ssr.[format]${
+          options.env
+            ? `.${options.env}${options.env === 'production' ? '.min' : ''}`
+            : ''
+        }.js`,
+      },
+    };
+
+    return [config, ssrConfig]; // always return a config.
   },
 };

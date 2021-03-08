@@ -9,20 +9,19 @@
     "start:prod": "NODE_ENV=production node build/server.js"
   },
   "dependencies": {
-    "fastify": "^2.15.1",
-    "fastify-static": "^2.7.0",
-    "razzle": "^3.1.3",
-    "razzle-plugin-typescript": "^3.1.3",
+    "fastify": "^3.13.0",
+    "fastify-static": "^4.0.1",
+    "razzle": "^3.3.13",
+    "razzle-plugin-typescript": "^3.3.13",
     "react": "link:../node_modules/react",
     "react-dom": "link:../node_modules/react-dom",
     "react-lazy-svg": "link:../"
   },
   "devDependencies": {
-    "@types/node": "^14.0.9",
+    "@types/node": "^14.14.32",
     "@types/react": "link:../node_modules/@types/react",
     "@types/react-dom": "link:../node_modules/@types/react-dom",
-    "@types/webpack-env": "^1.15.2",
-    "tslint": "^6.1.2",
-    "typescript": "^3.9.3"
+    "@types/webpack-env": "^1.16.0",
+    "typescript": "^4.2.3"
   }
 }

@@ -2,13 +2,8 @@
  * @jest-environment node
  */
 import React from 'react';
-import {
-  Icon,
-  SpriteContextProvider,
-  IconsCache,
-  renderSpriteSheetToString,
-  createSpriteSheetString,
-} from '../src/index';
+import { Icon, SpriteContextProvider, IconsCache } from '../src/index';
+import { renderSpriteSheetToString, createSpriteSheetString } from '../src/ssr';
 import { renderToString } from 'react-dom/server';
 
 const svg1 = `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">

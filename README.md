@@ -1,7 +1,6 @@
-<p align="center" style="color: #343a40">
-  <icon style="font-size:100px;" alt="sloth emoji">🦥</icon>
-  <h1 align="center">react-lazy-svg</h1>
-</p>
+<p align="center"><img alt="sloth emoji" src="https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/160/apple/271/sloth_1f9a5.png" /></p>
+
+<h1 align="center">react-lazy-svg</h1>
 <p align="center" style="font-size: 1.2rem;">The easy way to use SVG sprite-sheets</p>
 
 react-lazy-svg is a simple way to use SVGs with the performance benefits of a
