@@ -2,6 +2,17 @@
   "name": "react-lazy-svg",
   "version": "2.0.1",
   "license": "MIT",
+  "keywords": [
+    "react",
+    "svg",
+    "spritesheet",
+    "sprite",
+    "sprites",
+    "icons",
+    "ssr",
+    "typescript",
+    "react-component"
+  ],
   "repository": {
     "url": "https://github.com/kaoDev/react-lazy-svg"
   },
