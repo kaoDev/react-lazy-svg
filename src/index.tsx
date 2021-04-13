@@ -102,7 +102,9 @@ const registerIconInCache = (
   const iconData = parseSVG(url, svgString);
 
   if (iconData) {
-    addIcon(iconData);
+    if (!isSSR) {
+      addIcon(iconData);
+    }
   } else if (knownIcons.has(url)) {
     knownIcons.delete(url);
   }
