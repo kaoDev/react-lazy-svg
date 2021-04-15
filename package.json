@@ -35,7 +35,7 @@
     "publishVersion": "yarn test && yarn build && yarn lint && yarn publish",
     "test": "jest",
     "lint": "yarn eslint src/**/*",
-    "postinstall": "husky install"
+    "prepare": "husky install"
   },
   "peerDependencies": {
     "react": ">=16.8",
