@@ -3,6 +3,11 @@
 <h1 align="center">react-lazy-svg</h1>
 <p align="center" style="font-size: 1.2rem;">The easy way to use SVG sprite-sheets</p>
 
+[![GitHub license](https://img.shields.io/github/license/kaoDev/react-lazy-svg?style=flat-square)](https://github.com/kaoDev/react-lazy-svg)
+[![npm](https://img.shields.io/npm/dm/react-lazy-svg?style=flat-square)](https://www.npmjs.com/package/react-lazy-svg)
+[![npm](https://img.shields.io/npm/v/react-lazy-svg?style=flat-square)](https://www.npmjs.com/package/react-lazy-svg)
+[![GitHub issues](https://img.shields.io/github/issues/kaoDev/react-lazy-svg?style=flat-square)](https://github.com/kaoDev/react-lazy-svg/issues)
+
 react-lazy-svg is a simple way to use SVGs with the performance benefits of a
 sprite-sheet and svg css styling possibilities. Without bloating the bundle. It
 automatically creates a sprite-sheet for all used SVGs on the client but also
