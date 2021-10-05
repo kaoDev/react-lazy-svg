@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "fastify": "^3.13.0",
-    "fastify-static": "^4.0.1",
+    "fastify-static": "^4.2.4",
     "razzle": "^3.3.13",
     "razzle-plugin-typescript": "^3.3.13",
     "react": "link:../node_modules/react",
