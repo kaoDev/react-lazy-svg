@@ -3,22 +3,27 @@
 <h1 align="center">react-lazy-svg</h1>
 <p align="center" style="font-size: 1.2rem;">The easy way to use SVG sprite-sheets</p>
 
-[![GitHub license](https://img.shields.io/github/license/kaoDev/react-lazy-svg?style=flat-square)](https://github.com/kaoDev/react-lazy-svg)
+[![GitHub license](https://img.shields.io/github/license/kaoDev/react-lazy-svg?style=flat-square)](https://github.com/kaoDev/react-lazy-svg/blob/main/license.md)
 [![npm](https://img.shields.io/npm/dm/react-lazy-svg?style=flat-square)](https://www.npmjs.com/package/react-lazy-svg)
 [![npm](https://img.shields.io/npm/v/react-lazy-svg?style=flat-square)](https://www.npmjs.com/package/react-lazy-svg)
 [![GitHub issues](https://img.shields.io/github/issues/kaoDev/react-lazy-svg?style=flat-square)](https://github.com/kaoDev/react-lazy-svg/issues)
+[![minified bundle size](https://img.shields.io/bundlephobia/minzip/react-lazy-svg?style=flat-square)](https://bundlephobia.com/package/react-lazy-svg)
 
 react-lazy-svg is a simple way to use SVGs with the performance benefits of a
 sprite-sheet and svg css styling possibilities. Without bloating the bundle. It
 automatically creates a sprite-sheet for all used SVGs on the client but also
 provides a function to create a server side rendered sprite-sheet for icons used
-in the first paint.
+in the first paint. So you can inject the critical svg
 
 ## Usage
 
 ```bash
 npm install --save react-lazy-svg
 ```
+
+Examples on how to use react-lazy-svg with remix and next.js can be found in the
+[./example-nextjs/](./example-nextjs/) and [./example-remix/](./example-remix/)
+directory.
 
 Wrap the App with the contextProvider and provide a function to resolve SVG
 strings by URL. If you are using server side rendering you should also call
@@ -46,26 +51,23 @@ contents from the file system.
 
 ```ts
 const svgIconFiles = new Map<string, string>();
+const readFile = promisify(fs.readFile);
+const cdnBase = 'http://localhost:3001/static/media/';
+
 export const readSvg = async (url: string) => {
   if (svgIconFiles.has(url)) {
     return svgIconFiles.get(url);
   }
-
-  const readFile = promisify(fs.readFile);
-
-  const cdnBase = 'http://localhost:3001/static/media/';
 
   if (url.startsWith(cdnBase)) {
     url = path.join(
       process.cwd(),
       url.replace(cdnBase, './build/public/static/media/'),
     );
-  }
 
-  // ignore external assets on server side
-  if (!url.startsWith('http')) {
     const svgString = await readFile(url, { encoding: 'utf8' });
     svgIconFiles.set(url, svgString);
+
     return svgString;
   }
 
