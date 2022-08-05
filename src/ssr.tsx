@@ -1,7 +1,9 @@
 import React from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
-import { IconData, IconsCache, SpriteSheet } from './index';
+import { renderToStaticMarkup, renderToString } from 'react-dom/server';
 import { defaultInternalSpriteSheetId } from './constants';
+import { IconsCache } from './index';
+import { SpriteSheet } from './SpriteSheet';
+import { IconData } from './types';
 
 export const createSpriteSheetString = (knownIcons: IconsCache) => {
   return Promise.all(Array.from(knownIcons.values())).then((icons) =>
@@ -11,13 +13,17 @@ export const createSpriteSheetString = (knownIcons: IconsCache) => {
   );
 };
 
+const emptyIconsCache: IconData[] = [];
+
 export const renderSpriteSheetToString = (
   markupString: string,
   knownIcons: IconsCache,
   spriteSheetId = defaultInternalSpriteSheetId,
 ) => {
   return createSpriteSheetString(knownIcons).then((spriteSheet) => {
-    const ssrEmptySpriteSheet = `<svg id="${spriteSheetId}" style="display:none"></svg>`;
+    const ssrEmptySpriteSheet = renderToString(
+      <SpriteSheet icons={emptyIconsCache} spriteSheetId={spriteSheetId} />,
+    );
     return markupString.replace(ssrEmptySpriteSheet, spriteSheet);
   });
 };

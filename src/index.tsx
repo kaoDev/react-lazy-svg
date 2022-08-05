@@ -1,25 +1,19 @@
+import type { FC, ReactNode, SVGProps } from 'react';
 import React, {
   createContext,
   useCallback,
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from 'react';
-import type { FC } from 'react';
-import { createPortal } from 'react-dom';
-import { defaultInternalSpriteSheetId } from './constants';
+import { defaultInternalSpriteSheetId, isSSR } from './constants';
+import { SpriteSheet } from './SpriteSheet';
+import { IconData } from './types';
 
-const isSSR = typeof document === 'undefined';
+export { IconData };
 
 const globalIconsCache: IconsCache = new Map();
-
-export interface IconData {
-  id: string;
-  svgString: { __html: string };
-  attributes: { [key: string]: string };
-}
 
 const noop = () => undefined;
 
@@ -47,7 +41,7 @@ const mapAttributes = (rawAttributes: string) => {
   return attributes;
 };
 
-export type IconsCache = Map<string, Promise<IconData | undefined>>;
+export type IconsCache = Map<string, IconData | Promise<IconData | undefined>>;
 
 let localIconsList: IconData[] = [];
 
@@ -112,7 +106,7 @@ const registerIconInCache = (
 };
 
 const useIcons = () => {
-  const [icons, setIcons] = useState<IconData[]>([]);
+  const [icons, setIcons] = useState<IconData[]>(localIconsList);
 
   useEffect(() => {
     addListener(setIcons);
@@ -132,6 +126,7 @@ export interface SpriteContext {
   loadSVG: (url: string) => Promise<string | undefined>;
   knownIcons?: IconsCache;
   embeddedSSR?: boolean;
+  children?: ReactNode;
 }
 
 export const SpriteContextProvider: FC<SpriteContext> = ({
@@ -155,17 +150,28 @@ export const SpriteContextProvider: FC<SpriteContext> = ({
     [knownIcons, loadSVG],
   );
 
-  const contextValue = useMemo(() => ({ registerSVG }), [registerSVG]);
+  const { registerSVG: wrappingContextRegisterSVG } = useContext(spriteContext);
+  const contextValue = useMemo(
+    () => ({
+      registerSVG:
+        wrappingContextRegisterSVG === noop
+          ? registerSVG
+          : wrappingContextRegisterSVG,
+    }),
+    [registerSVG, wrappingContextRegisterSVG],
+  );
 
   return (
     <spriteContext.Provider value={contextValue}>
       {children}
-      {(!isSSR || embeddedSSR) && <SpriteSheet icons={icons}></SpriteSheet>}
+      {(!isSSR || embeddedSSR) && (
+        <SpriteSheet embeddedSSR={embeddedSSR} icons={icons}></SpriteSheet>
+      )}
     </spriteContext.Provider>
   );
 };
 
-export const Icon: FC<{ url: string } & React.SVGProps<SVGSVGElement>> = ({
+export const Icon: FC<{ url: string } & SVGProps<SVGSVGElement>> = ({
   url,
   ...props
 }) => {
@@ -187,49 +193,6 @@ export const Icon: FC<{ url: string } & React.SVGProps<SVGSVGElement>> = ({
   );
 };
 
-const hidden = {
-  height: 0,
-  width: 0,
-  position: 'absolute',
-  visibility: 'hidden',
-} as const;
-export const SpriteSheet: FC<{
-  icons: IconData[];
-  spriteSheetId?: string;
-}> = ({ icons, spriteSheetId = defaultInternalSpriteSheetId }) => {
-  const spriteSheetContainer = useRef(
-    !isSSR ? document.getElementById(spriteSheetId) : null,
-  );
-
-  const renderedIcons = icons.map(
-    ({
-      id,
-      svgString,
-      attributes: { width, height, ['xmlns:xlink']: xmlnsXlink, ...attributes },
-    }) => {
-      return (
-        <symbol
-          key={id}
-          id={id}
-          xmlnsXlink={xmlnsXlink}
-          {...attributes}
-          dangerouslySetInnerHTML={svgString}
-        />
-      );
-    },
-  );
-
-  if (spriteSheetContainer.current) {
-    return createPortal(renderedIcons, spriteSheetContainer.current);
-  }
-
-  return (
-    <svg id={spriteSheetId} style={hidden}>
-      {renderedIcons}
-    </svg>
-  );
-};
-
 const mapNodeAttributes = (rawAttributes: NamedNodeMap) =>
   Array.from(rawAttributes).reduce<IconData['attributes']>(
     (attributes, current) => {
@@ -246,15 +209,12 @@ export const initOnClient = (
 ) => {
   knownIcons.clear();
   const spriteSheet = document.getElementById(spriteSheetId);
+
   if (spriteSheet) {
-    const serializer = new XMLSerializer();
     const sprites = Array.from(spriteSheet.querySelectorAll('symbol'));
 
     for (const node of sprites) {
-      const innerHTML = Array.prototype.map
-        .call(node.childNodes, (child) => serializer.serializeToString(child))
-        .join('');
-
+      const innerHTML = node.innerHTML;
       const { id, attributes: rawAttributes } = node;
       const attributes = mapNodeAttributes(rawAttributes);
       const iconData = {

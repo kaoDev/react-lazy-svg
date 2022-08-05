@@ -25,8 +25,6 @@ module.exports = {
    * @param {TsdxOptions} options
    */
   rollup(config, options) {
-    console.log('options input', options);
-
     config.output = { dir: 'dist' };
     delete config.output.file;
     config.output.entryFileNames = `${safePackageName(options.name)}.[format]${
